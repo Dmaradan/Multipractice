@@ -24,6 +24,7 @@ struct SheetView: View {
     @State private var usedQuestions: Set<String> = []
     @State private var response = "Waiting"
     @State private var showingAnswer = false
+    @State private var gameOver = false
     
     @State private var score = 0
     @State private var questionNumber = 0
@@ -71,12 +72,22 @@ struct SheetView: View {
                 resetFields()
             }
         }
+        .alert("Game Over, your score is \(score). Good effort!", isPresented: $gameOver) {
+            Button("Ok") {
+                dismiss()
+            }
+        }
     }
     
     func resetFields() {
-        response = "Waiting"
-        questionNumber += 1
-        displayQuestion()
+        if questionNumber + 1 == questionAmount {
+            gameOver = true
+        } else {
+            response = "Waiting"
+            questionNumber += 1
+            displayQuestion()
+        }
+        
     }
     
     func checkAnswer() -> Bool {
