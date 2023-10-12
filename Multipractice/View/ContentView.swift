@@ -19,16 +19,22 @@ struct SheetView: View {
     @State private var questions: [String:Int] = [:]
     @State private var currentQuestion: String = ""
     @State private var currentAnswer: Int = 0
+    @State private var answerText: Int = 0
     
     @State private var usedQuestions: Set<String> = []
+    @State private var response = "Waiting"
+    @State private var showingAnswer = false
+    
+    @State private var score = 0
+    @State private var questionNumber = 0
     
     var highestTable: Int
     var questionAmount: Int
-    var questionNumber = 0
+    
     
     var body: some View {
         VStack() {
-            Text("Score")
+            Text("Score: \(score)")
                 .font(.largeTitle)
                 .fontWeight(.bold)
             Spacer()
@@ -36,19 +42,55 @@ struct SheetView: View {
             Text(questions.count > 0 ? "Question \(questionNumber + 1):   \(currentQuestion)" : "Loading")
                 .font(.headline)
             
-            Text("The answer is \(currentAnswer)")
+            Form {
+                Section("Enter your answer") {
+                    TextField("", value: $answerText, format: .number)
+                        .onSubmit {
+                            response = checkAnswer() ? "Correct!" : "Wrong"
+                        }
+                }
+            }
+            Spacer()
+            Spacer()
+            Spacer()
+            Text(response)
+                .font(.headline)
+                .fontWeight(.bold)
+            Text(showingAnswer ? "The answer is \(currentAnswer)" : "")
             
             Spacer()
         }
         .padding(50)
+        .background(.teal)
         .onAppear{
             populateQuestions()
             displayQuestion()
         }
+        .alert(response, isPresented: $showingAnswer) {
+            Button("Next question") {
+                resetFields()
+            }
+        }
+    }
+    
+    func resetFields() {
+        response = "Waiting"
+        questionNumber += 1
+        displayQuestion()
+    }
+    
+    func checkAnswer() -> Bool {
+        showingAnswer = true
+        if answerText == currentAnswer {
+            score += 1
+            return true
+        } else {
+            return false
+        }
     }
     
     func displayQuestion() {
-        var currentPair = fetchQuestion()
+        let currentPair = fetchQuestion()
         if usedQuestions.contains(currentPair.0) {
             displayQuestion()
         } else {
