@@ -17,9 +17,10 @@ struct SheetView: View {
     @Environment(\.dismiss) var dismiss
     
     @State private var questions: [String:Int] = [:]
-    @State private var chosenQuestions: [[String:Int]] = [[:]]
     @State private var currentQuestion: String = ""
     @State private var currentAnswer: Int = 0
+    
+    @State private var usedQuestions: Set<String> = []
     
     var highestTable: Int
     var questionAmount: Int
@@ -48,8 +49,13 @@ struct SheetView: View {
     
     func displayQuestion() {
         var currentPair = fetchQuestion()
-        currentQuestion = currentPair.0
-        currentAnswer = currentPair.1
+        if usedQuestions.contains(currentPair.0) {
+            displayQuestion()
+        } else {
+            currentQuestion = currentPair.0
+            usedQuestions.insert(currentQuestion)
+            currentAnswer = currentPair.1
+        }
     }
     
     func fetchQuestion() -> (String, Int) {
@@ -78,10 +84,6 @@ struct SheetView: View {
         }
         
         print(questions)
-
-        print(chosenQuestions)
-        print(chosenQuestions.count)
-
     }
 }
 
