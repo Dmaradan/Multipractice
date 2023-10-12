@@ -13,6 +13,18 @@ enum Difficulty: String, CaseIterable {
     case hard
 }
 
+struct SheetView: View {
+    @Environment(\.dismiss) var dismiss
+    
+    var highestTable: Int
+    var questionAmount: Int
+    
+    var body: some View {
+        Text("We have \(questionAmount) questions to go through up to \(highestTable) table")
+            .background(.teal)
+    }
+}
+
 struct ContentView: View {
     let colors: [Color] = [.green, .blue, .yellow, .red]
     let questionAmounts = [5, 10, 20]
@@ -26,69 +38,78 @@ struct ContentView: View {
     
     @State private var customDifficultyOn = false
     
+    @State private var showingGameSheet = false
+    
     var body: some View {
-        VStack {
-            Text("Settings")
-                .font(.largeTitle)
-                .fontWeight(.bold)
-            
-            Spacer()
-            
-            Text("Presets")
-                .multilineTextAlignment(.leading)
-            Form {
-                Section("Choose difficulty") {
-                    Picker("", selection: $difficulty) {
-                        ForEach(Difficulty.allCases, id: \.self) {
-                            Text($0.rawValue)
+        NavigationStack {
+            VStack {
+                Text("Settings")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                
+                Spacer()
+                
+                Text("Presets")
+                    .multilineTextAlignment(.leading)
+                Form {
+                    Section("Choose difficulty") {
+                        Picker("", selection: $difficulty) {
+                            ForEach(Difficulty.allCases, id: \.self) {
+                                Text($0.rawValue)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                        .onChange(of: difficulty, chooseDifficulty)
+                        
+                        VStack {
+                            Text(animal)
+                                .font(.largeTitle)
+                            Text(difficultyDescription)
+                                .font(.title)
+                                .multilineTextAlignment(.center)
                         }
                     }
-                    .pickerStyle(.segmented)
-                    .onChange(of: difficulty, chooseDifficulty)
-                    
-                    VStack {
-                        Text(animal)
-                            .font(.largeTitle)
-                        Text(difficultyDescription)
-                            .font(.title)
-                            .multilineTextAlignment(.center)
-                    }
-                }
-            }
-            
-            Spacer()
-            
-            Text("Custom difficulty")
-            
-            Form {
-                Section("Choose highest table to practice") {
-                    Picker("", selection: $highestTable) {
-                        ForEach(2..<13, id: \.self) {
-                            Text("\($0)")
-                        }
-                    }
-                    .pickerStyle(.segmented)
                 }
                 
-                Section("Amount of questions") {
-                    Picker("", selection: $questionAmount) {
-                        ForEach(questionAmounts, id: \.self) {
-                            Text("\($0)")
+                Spacer()
+                
+                Text("Custom difficulty")
+                
+                Form {
+                    Section("Choose highest table to practice") {
+                        Picker("", selection: $highestTable) {
+                            ForEach(2..<13, id: \.self) {
+                                Text("\($0)")
+                            }
                         }
+                        .pickerStyle(.segmented)
                     }
-                    .pickerStyle(.segmented)
+                    
+                    Section("Amount of questions") {
+                        Picker("", selection: $questionAmount) {
+                            ForEach(questionAmounts, id: \.self) {
+                                Text("\($0)")
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                    }
                 }
+                
+                //NavigationLink("PLAY", destination: SheetView())
+                Button("PLAY") {
+                    showingGameSheet.toggle()
+                }
+                
+                
+                Spacer()
+                
             }
-            
-            Button("PLAY") {
-                //play game
+            .onAppear {
+                chooseDifficulty()
             }
-            
-            Spacer()
-            
-        }
-        .onAppear {
-            chooseDifficulty()
+            .sheet(isPresented: $showingGameSheet) {
+                SheetView(highestTable: highestTable, questionAmount: questionAmount)
+            }
         }
     }
     
