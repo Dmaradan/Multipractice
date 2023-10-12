@@ -16,55 +16,72 @@ enum Difficulty: String, CaseIterable {
 struct SheetView: View {
     @Environment(\.dismiss) var dismiss
     
-    @State private var questions: [String] = []
-    @State private var chosenQuestions: Set<String> = []
+    @State private var questions: [String:Int] = [:]
+    @State private var chosenQuestions: [[String:Int]] = [[:]]
+    @State private var currentQuestion: String = ""
+    @State private var currentAnswer: Int = 0
     
     var highestTable: Int
     var questionAmount: Int
-    var questionNumber = 1
+    var questionNumber = 0
     
     var body: some View {
-        Text("We have \(questionAmount) questions to go through up to \(highestTable) table")
-            .background(.teal)
-            .onAppear{
-                populateQuestions()
-            }
+        VStack() {
+            Text("Score")
+                .font(.largeTitle)
+                .fontWeight(.bold)
+            Spacer()
+            
+            Text(questions.count > 0 ? "Question \(questionNumber + 1):   \(currentQuestion)" : "Loading")
+                .font(.headline)
+            
+            Text("The answer is \(currentAnswer)")
+            
+            Spacer()
+        }
+        .padding(50)
+        .onAppear{
+            populateQuestions()
+            displayQuestion()
+        }
+    }
+    
+    func displayQuestion() {
+        var currentPair = fetchQuestion()
+        currentQuestion = currentPair.0
+        currentAnswer = currentPair.1
+    }
+    
+    func fetchQuestion() -> (String, Int) {
+        if let safeQuestion = questions.randomElement() {
+            return (safeQuestion.key, safeQuestion.value)
+        }
+        
+        return ("Can't find any more questions ☠️", 0)
     }
     
     func populateQuestions() {
         for table in (2...highestTable) {
             for num in (1...10) {
                 let question = "What is \(table) * \(num)?"
-                questions.append(question)
+                questions[question] = table * num
             }
         }
         
         if highestTable >= 11 {
-            questions.append("What is 11 * 11?")
+            questions["What is 11 * 11?"] = 121
         }
         
         if highestTable == 12 {
-            questions.append("What is 12 * 11?")
-            questions.append("What is 12 * 12?")
+            questions["What is 12 * 11?"] = 132
+            questions["What is 12 * 12?"] = 144
         }
         
         print(questions)
-        while chosenQuestions.count < questionAmount {
-            chooseQuestions()
-        }
+
         print(chosenQuestions)
         print(chosenQuestions.count)
-    }
-    
-    func chooseQuestions() {
-        for _ in (1...questionAmount) {
-            let question = questions.randomElement()
-            if let safeQuestion = question {
-                if chosenQuestions.count != questionAmount {
-                    chosenQuestions.insert(safeQuestion)
-                }
-            }
-        }
+
     }
 }
 
