@@ -16,12 +16,55 @@ enum Difficulty: String, CaseIterable {
 struct SheetView: View {
     @Environment(\.dismiss) var dismiss
     
+    @State private var questions: [String] = []
+    @State private var chosenQuestions: Set<String> = []
+    
     var highestTable: Int
     var questionAmount: Int
+    var questionNumber = 1
     
     var body: some View {
         Text("We have \(questionAmount) questions to go through up to \(highestTable) table")
             .background(.teal)
+            .onAppear{
+                populateQuestions()
+            }
+    }
+    
+    func populateQuestions() {
+        for table in (2...highestTable) {
+            for num in (1...10) {
+                let question = "What is \(table) * \(num)?"
+                questions.append(question)
+            }
+        }
+        
+        if highestTable >= 11 {
+            questions.append("What is 11 * 11?")
+        }
+        
+        if highestTable == 12 {
+            questions.append("What is 12 * 11?")
+            questions.append("What is 12 * 12?")
+        }
+        
+        print(questions)
+        while chosenQuestions.count < questionAmount {
+            chooseQuestions()
+        }
+        print(chosenQuestions)
+        print(chosenQuestions.count)
+    }
+    
+    func chooseQuestions() {
+        for _ in (1...questionAmount) {
+            let question = questions.randomElement()
+            if let safeQuestion = question {
+                if chosenQuestions.count != questionAmount {
+                    chosenQuestions.insert(safeQuestion)
+                }
+            }
+        }
     }
 }
 
